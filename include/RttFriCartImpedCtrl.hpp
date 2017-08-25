@@ -15,7 +15,8 @@
 #include <rst-rt/dynamics/JointTorques.hpp>
 #include <rst-rt/kinematics/JointAngles.hpp>
 #include <kdl/frames.hpp>
-#include "friremote_rt.h"
+#include <friremote_rt.h>
+#include <fricomm_rt.h>
 
 #define DOF_SIZE 7
 
@@ -31,7 +32,8 @@ public:
 
 
 private:
-    friRemote _fri;
+    //friRemote _fri;
+    friRemote* _fri;
     std::string _host_ip, _server_ip;
     int _port;
     bool _recieved, _command;

@@ -67,10 +67,11 @@ void RttFriCartImpedCtrl::initPorts(){
 
 bool RttFriCartImpedCtrl::configureHook(){
     // TODO check the fourth argument here
-    _fri = friRemote(_port, _host_ip.c_str(), _server_ip.c_str(), this->getActivity()->thread()->getTask());
+    //_fri = friRemote(_port, _host_ip.c_str(), _server_ip.c_str(), this->getActivity()->thread()->getTask());
+    _fri= new friRemote(_port, _host_ip.c_str(), _server_ip.c_str(), this->getActivity()->thread()->getTask());
     // TODO make a sense of this:
     char str[INET_ADDRSTRLEN];
-    inet_ntop(AF_INET, &(_fri.remote.krcAddr.sin_addr), str, INET_ADDRSTRLEN);
+    inet_ntop(AF_INET, &(_fri->remote.krcAddr.sin_addr), str, INET_ADDRSTRLEN);
     RTT::log(RTT::Info) << "Opening FRI Version "
                         << FRI_MAJOR_VERSION << "."
                         << FRI_SUB_VERSION << "."
@@ -79,21 +80,21 @@ bool RttFriCartImpedCtrl::configureHook(){
                         << " Interface for LWR ROS server"
                         << RTT::endlog();
     RTT::log(RTT::Info) << "Checking if the robot is Stopped..." << RTT::endlog();
-    if(_fri.getState() == FRI_STATE_OFF ){
+    if(_fri->getState() == FRI_STATE_OFF ){
          RTT::log(RTT::Info) << "Please, start the KRL script now." << RTT::endlog();
     }
     return true;
 }
 
 bool RttFriCartImpedCtrl::startHook(){
-    _fri.getCmdBuf().cmd.cmdFlags = 0;
-    _fri.getCmdBuf().cmd.cmdFlags |= FRI_CMD_CARTPOS;
-    _fri.getCmdBuf().cmd.cmdFlags |= FRI_CMD_CARTSTIFF;
-    _fri.getCmdBuf().cmd.cmdFlags |= FRI_CMD_CARTDAMP;
-    _fri.getCmdBuf().cmd.cmdFlags |= FRI_CMD_TCPFT;
-    _fri.getCmdBuf().cmd.cmdFlags |= FRI_CMD_JNTPOS;
-    _fri.setToKRLInt(14,20);  // where to get this value    
-    _fri.doDataExchange();
+    _fri->getCmdBuf().cmd.cmdFlags = 0;
+    _fri->getCmdBuf().cmd.cmdFlags |= FRI_CMD_CARTPOS;
+    _fri->getCmdBuf().cmd.cmdFlags |= FRI_CMD_CARTSTIFF;
+    _fri->getCmdBuf().cmd.cmdFlags |= FRI_CMD_CARTDAMP;
+    _fri->getCmdBuf().cmd.cmdFlags |= FRI_CMD_TCPFT;
+    _fri->getCmdBuf().cmd.cmdFlags |= FRI_CMD_JNTPOS;
+    _fri->setToKRLInt(14,20);  // where to get this value
+    _fri->doDataExchange();
     return true;
 }
 
@@ -155,16 +156,16 @@ bool RttFriCartImpedCtrl::getCommand(){
 
 void RttFriCartImpedCtrl::move(){
     if(!_recieved){
-        _fri.doSendData();
+        _fri->doSendData();
         return;
     }
     // not sure why. a practice noticed at josh's code
-    if(_fri.getQuality()<2){
-        RTT::log(RTT::Info) << _fri.doSendData()<< ":low qual sending"<<RTT::endlog();
+    if(_fri->getQuality()<2){
+        RTT::log(RTT::Info) << _fri->doSendData()<< ":low qual sending"<<RTT::endlog();
         return;
     }
 
-    _fri.doCartesianImpedanceControl(
+    _fri->doCartesianImpedanceControl(
                 cart_data_robot,
                 stiff_damp_in_data.stiffness.data(),
                 stiff_damp_in_data.damping.data(),
@@ -172,7 +173,7 @@ void RttFriCartImpedCtrl::move(){
                 joints,
                 false);
 
-    _fri.doSendData();
+    _fri->doSendData();
 }
 
 void RttFriCartImpedCtrl::stopHook() {
@@ -203,19 +204,19 @@ void RttFriCartImpedCtrl::stopHook() {
     // Not sure about this. Seems trying to set one last value to kuka before shutting down
     // however, don't know why they repeate last line multiple times, as well as some other
     // part. Perhapse it's a matter of being super duper sure!
-    _fri.doCartesianImpedanceControl(_fri.getMsrCartPosition()); // rest should be nullx4 and true
+    _fri->doCartesianImpedanceControl(_fri->getMsrCartPosition()); // rest should be nullx4 and true
 
     int r = 0;
     while(r<20){
-        _fri.setToKRLInt(15, 20);
-        _fri.doDataExchange();
+        _fri->setToKRLInt(15, 20);
+        _fri->doDataExchange();
         r++;
         RTT::log(RTT::Critical) << r<< ":stopping"<<RTT::endlog();
     }
-    _fri.setToKRLInt(15, 0);
-    _fri.doDataExchange();
-    _fri.doDataExchange();
-    _fri.doDataExchange();
+    _fri->setToKRLInt(15, 0);
+    _fri->doDataExchange();
+    _fri->doDataExchange();
+    _fri->doDataExchange();
 }
 
 void RttFriCartImpedCtrl::cleanupHook() {
@@ -224,23 +225,23 @@ void RttFriCartImpedCtrl::cleanupHook() {
 
 void RttFriCartImpedCtrl::sense(){
     // from joshua smith at https://github.com/smithjoshua001/rtt-lwr-hardware-integration
-    _recieved = (_fri.doReceiveData()>=0);
+    _recieved = (_fri->doReceiveData()>=0);
     if(!_recieved){
         return;
     }
 
-    _fri.setToKRLInt(15, 0);
-    if(_fri.getQuality()<2){
+    _fri->setToKRLInt(15, 0);
+    if(_fri->getQuality()<2){
         return;
     }
 
-    if (_fri.getFrmKRLInt(15) < 10) {
+    if (_fri->getFrmKRLInt(15) < 10) {
         return;
     }
 
-    if (_fri.getFrmKRLInt(15) == 10) {
-        if(_fri.getQuality()>=2){
-            _fri.setToKRLInt(15, 10);
+    if (_fri->getFrmKRLInt(15) == 10) {
+        if(_fri->getQuality()>=2){
+            _fri->setToKRLInt(15, 10);
             //_fri_inst->doDataExchange(); ??
         }
     }
@@ -250,24 +251,24 @@ void RttFriCartImpedCtrl::sense(){
 
 void RttFriCartImpedCtrl::form_output_data(){
     for(int i = 0; i<DOF_SIZE; ++i){
-        current_joint_values_out_data.angles(i) = _fri.getMsrCmdJntPosition()[i];
-        current_joint_torques_out_data.torques(i) = _fri.getMsrJntTrq()[i];
+        current_joint_values_out_data.angles(i) = _fri->getMsrCmdJntPosition()[i];
+        current_joint_torques_out_data.torques(i) = _fri->getMsrJntTrq()[i];
     }
 
     // TODO check if getMsr** is populating its data once or on every call
-    cartesian_pose_out_data.p.data[0] = _fri.getMsrCartPosition()[3];
-    cartesian_pose_out_data.p.data[1] = _fri.getMsrCartPosition()[7];
-    cartesian_pose_out_data.p.data[2] = _fri.getMsrCartPosition()[11];
+    cartesian_pose_out_data.p.data[0] = _fri->getMsrCartPosition()[3];
+    cartesian_pose_out_data.p.data[1] = _fri->getMsrCartPosition()[7];
+    cartesian_pose_out_data.p.data[2] = _fri->getMsrCartPosition()[11];
 
-    cartesian_pose_out_data.M.data[0] = _fri.getMsrCartPosition()[0];
-    cartesian_pose_out_data.M.data[1] = _fri.getMsrCartPosition()[1];
-    cartesian_pose_out_data.M.data[2] = _fri.getMsrCartPosition()[2];
-    cartesian_pose_out_data.M.data[3] = _fri.getMsrCartPosition()[4];
-    cartesian_pose_out_data.M.data[4] = _fri.getMsrCartPosition()[5];
-    cartesian_pose_out_data.M.data[5] = _fri.getMsrCartPosition()[6];
-    cartesian_pose_out_data.M.data[6] = _fri.getMsrCartPosition()[8];
-    cartesian_pose_out_data.M.data[7] = _fri.getMsrCartPosition()[9];
-    cartesian_pose_out_data.M.data[8] = _fri.getMsrCartPosition()[10];
+    cartesian_pose_out_data.M.data[0] = _fri->getMsrCartPosition()[0];
+    cartesian_pose_out_data.M.data[1] = _fri->getMsrCartPosition()[1];
+    cartesian_pose_out_data.M.data[2] = _fri->getMsrCartPosition()[2];
+    cartesian_pose_out_data.M.data[3] = _fri->getMsrCartPosition()[4];
+    cartesian_pose_out_data.M.data[4] = _fri->getMsrCartPosition()[5];
+    cartesian_pose_out_data.M.data[5] = _fri->getMsrCartPosition()[6];
+    cartesian_pose_out_data.M.data[6] = _fri->getMsrCartPosition()[8];
+    cartesian_pose_out_data.M.data[7] = _fri->getMsrCartPosition()[9];
+    cartesian_pose_out_data.M.data[8] = _fri->getMsrCartPosition()[10];
 }
 
 /*
