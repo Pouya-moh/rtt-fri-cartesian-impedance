@@ -20,6 +20,14 @@ IF (RST-RT_FOUND)
 	link_directories(${RST-RT_LIBRARY_DIRS})
 ENDIF()
 
+find_package(orocos_kdl REQUIRED)
+IF (orocos_kdl_FOUND)
+    message(STATUS "orocos_kdl found. Version: ${orocos_kdl_VERSION}")
+    include_directories(BEFORE SYSTEM ${orocos_kdl_INCLUDE_DIRS})
+    add_definitions(${orocos_kdl_CFLAGS})
+    link_directories(${orocos_kdl_LIBRARY_DIRS})
+ENDIF()
+
 include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
 
 # orocos_install_headers(includes)
@@ -36,6 +44,7 @@ orocos_component(${CMAKE_PROJECT_NAME}
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
 						${RST-RT_LIBRARIES}
+                        ${orocos_kdl_LIBRARIES}
 					 )
 
 orocos_generate_package()
