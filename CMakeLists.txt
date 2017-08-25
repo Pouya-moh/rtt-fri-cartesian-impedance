@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(rtt-fri-cartesian-impedance)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+# set (CMAKE_CXX_STANDARD 11)
+
 include_directories(${PROJECT_SOURCE_DIR}/include)
 
 find_package(OROCOS-RTT REQUIRED ${RTT_HINTS})
@@ -22,8 +25,13 @@ include(${OROCOS-RTT_USE_FILE_PATH}/UseOROCOS-RTT.cmake)
 # orocos_install_headers(includes)
 
 orocos_component(${CMAKE_PROJECT_NAME} 
-					RttFriCartImpedCtrl.hpp
-					RttFriCartImpedCtrl.cpp
+				 ${PROJECT_SOURCE_DIR}/src/RttFriCartImpedCtrl.cpp
+				 ${PROJECT_SOURCE_DIR}/src/friremote_rt.cpp  
+				 ${PROJECT_SOURCE_DIR}/src/friudp_rt.cpp
+				 ${PROJECT_SOURCE_DIR}/include/RttFriCartImpedCtrl.hpp
+				 ${PROJECT_SOURCE_DIR}/include/friremote_rt.h  
+				 ${PROJECT_SOURCE_DIR}/include/friudp_rt.h
+				 ${PROJECT_SOURCE_DIR}/include/fricomm_rt.h  
 				)
 
 target_link_libraries(${CMAKE_PROJECT_NAME}

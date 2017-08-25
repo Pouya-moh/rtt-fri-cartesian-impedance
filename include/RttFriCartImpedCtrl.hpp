@@ -9,12 +9,16 @@
 #ifndef RTTFRICARTIMPEDCTRL_HPP
 #define RTTFRICARTIMPEDCTRL_HPP
 
-class RttFriCartImpedCtrl {
-public:
-	RttFriCartImpedCtrl();
-	RttFriCartImpedCtrl(const RttFriCartImpedCtrl& orig);
-	virtual ~RttFriCartImpedCtrl();
+#include <rtt/RTT.hpp>
 
+class RttFriCartImpedCtrl : public RTT::TaskContext{
+public:
+	RttFriCartImpedCtrl(std::string const& name);
+	bool configureHook();
+    bool startHook();
+    void updateHook();
+    void stopHook();
+    void cleanupHook();
 private:
 
 protected:
