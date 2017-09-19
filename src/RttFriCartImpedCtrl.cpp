@@ -63,6 +63,11 @@ void RttFriCartImpedCtrl::initPorts(){
     current_joint_torques_out_port.setDataSample(current_joint_torques_out_data);
     ports()->addPort(current_joint_torques_out_port);
 
+    current_cart_force_torque_out_data = rstrt::dynamics::Wrench();
+    current_cart_force_torque_out_port.setName("current_cart_force_torque");
+    current_cart_force_torque_out_port.setDataSample(current_cart_force_torque_out_data);
+    ports()->addPort(current_cart_force_torque_out_port);
+
 }
 
 bool RttFriCartImpedCtrl::configureHook(){
@@ -109,6 +114,7 @@ void RttFriCartImpedCtrl::updateHook(){
     cartesian_pose_out_port.write(cartesian_pose_out_data);
     current_joint_values_out_port.write(current_joint_values_out_data);
     current_joint_torques_out_port.write(current_joint_torques_out_data);
+    current_cart_force_torque_out_port.write(current_cart_force_torque_out_data);
 }
 
 bool RttFriCartImpedCtrl::getCommand(){
@@ -255,6 +261,16 @@ void RttFriCartImpedCtrl::form_output_data(){
         current_joint_torques_out_data.torques(i) = _fri->getMsrJntTrq()[i];
     }
 
+    // Getting the current external Force Torque reading
+    current_cart_force_torque_out_data.forces(0) = _fri->getMsrEstExtForceTrq()[0];
+    current_cart_force_torque_out_data.forces(1) = _fri->getMsrEstExtForceTrq()[1];
+    current_cart_force_torque_out_data.forces(2) = _fri->getMsrEstExtForceTrq()[2];
+
+    current_cart_force_torque_out_data.torques(0) = _fri->getMsrEstExtForceTrq()[3];
+    current_cart_force_torque_out_data.torques(1) = _fri->getMsrEstExtForceTrq()[4];
+    current_cart_force_torque_out_data.torques(2) = _fri->getMsrEstExtForceTrq()[5];
+
+
     // TODO check if getMsr** is populating its data once or on every call
     cartesian_pose_out_data.p.data[0] = _fri->getMsrCartPosition()[3];
     cartesian_pose_out_data.p.data[1] = _fri->getMsrCartPosition()[7];
@@ -269,6 +285,7 @@ void RttFriCartImpedCtrl::form_output_data(){
     cartesian_pose_out_data.M.data[6] = _fri->getMsrCartPosition()[8];
     cartesian_pose_out_data.M.data[7] = _fri->getMsrCartPosition()[9];
     cartesian_pose_out_data.M.data[8] = _fri->getMsrCartPosition()[10];
+
 }
 
 /*

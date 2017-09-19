@@ -162,6 +162,9 @@ class friRemote
   float * getGrav(){return msr.data.gravity;}
   /* @} */
 
+  /** Current measured Forces and Torques at TCP**/
+  float * getMsrEstExtForceTrq(){return msr.data.estExtTcpFT;}
+
   float getSampleTime() { return msr.intf.desiredCmdSampleTime; }
   int getSequenceCount() { return seqCount; }
   int getReflSequenceCount() { return msr.head.sendSeqCount; }

@@ -14,11 +14,13 @@
 #include <rst-rt/dynamics/JointImpedance.hpp>
 #include <rst-rt/dynamics/JointTorques.hpp>
 #include <rst-rt/kinematics/JointAngles.hpp>
+#include <rst-rt/dynamics/Wrench.hpp>
 #include <kdl/frames.hpp>
 #include <friremote_rt.h>
 #include <fricomm_rt.h>
 
 #define DOF_SIZE 7
+#define CART_SIZE 6
 
 class RttFriCartImpedCtrl : public RTT::TaskContext{
 public:
@@ -71,6 +73,8 @@ private:
     RTT::OutputPort<rstrt::dynamics::JointTorques> current_joint_torques_out_port;
     rstrt::dynamics::JointTorques current_joint_torques_out_data;
 
+    RTT::OutputPort<rstrt::dynamics::Wrench> current_cart_force_torque_out_port;
+    rstrt::dynamics::Wrench current_cart_force_torque_out_data;
 
     // maybe add stiffness and damping
     // deffinitly add the currenc conf and currecnt torques
